@@ -6,8 +6,20 @@ build:
         theme: herring-cove
         flags: --buildDrafts=true
 deploy:
-  steps:
-    - lukevivier/gh-pages@0.2.1:
-        token: $GIT_TOKEN
-        domain: http://warfox.github.io/hugo-wercker-example
-        basedir: public
+    steps:
+        - add-to-known_hosts:
+            hostname: direct.deepumohan.com
+        - mktemp:
+            envvar: PRIVATEKEY_PATH
+        - create-file:
+            name: write key
+            filename: $PRIVATEKEY_PATH
+            content: $KEY_PRIVATE
+            overwrite: true
+            hide-from-log: true
+        - script:
+            name: transfer files
+            code: |
+                pwd
+                ls -la
+                scp -i $PRIVATEKEY_PATH -o StrictHostKeyChecking=no -o UserKnownHostsFile=no -P $PORT -v -r public/* $DEPLOY_PATH
